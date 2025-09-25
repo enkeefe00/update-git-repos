@@ -54,7 +54,7 @@ func main() {
 
 	// Check if the ~/git directory exists.
 	if _, err := os.Stat(gitRoot); os.IsNotExist(err) {
-		fmt.Fprintf(consoleAndFileLogger, "Error: The directory '%s' does not exist. Please ensure your Git repositories are in this folder.\n", gitRoot) // Log to both
+		fmt.Fprintf(consoleAndFileLogger, "Error: The directory '%s' does not exist. Please ensure your Git repositories are in this folder.\n", gitRoot)
 		os.Exit(1)
 	}
 
@@ -63,7 +63,7 @@ func main() {
 	// Walk through the ~/git directory to find all Git repositories.
 	err = filepath.WalkDir(gitRoot, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
-			fmt.Fprintf(consoleAndFileLogger, "Error accessing path %s: %v\n", path, err) // Log to both
+			fmt.Fprintf(consoleAndFileLogger, "Error accessing path %s: %v\n", path, err)
 			return nil
 		}
 
@@ -73,11 +73,13 @@ func main() {
 
 		gitDir := filepath.Join(path, ".git")
 		if info, err := os.Stat(gitDir); err == nil && info.IsDir() {
-			fmt.Fprintf(consoleAndFileLogger, "\n--- Found repository: %s ---\n", path) // Log to both
-			if err := updateGitRepo(path, fileOnlyLogger); err != nil {
-				fmt.Fprintf(consoleAndFileLogger, "!!! Failed to update repository %s: %v\n", path, err) // Log to both
+			fmt.Fprintf(consoleAndFileLogger, "\n--- Found repository: %s ---\n", path)
+
+			err := updateGitRepo(path, fileOnlyLogger)
+			if err != nil {
+				fmt.Fprintf(consoleAndFileLogger, "!!! Failed to update repository %s: %v\n", path, err)
 			} else {
-				fmt.Fprintf(consoleAndFileLogger, "+++ Successfully updated repository: %s\n", path) // Log to both
+				fmt.Fprintf(consoleAndFileLogger, "+++ Successfully updated repository: %s\n", path)
 			}
 			return filepath.SkipDir
 		}
@@ -85,8 +87,8 @@ func main() {
 	})
 
 	if err != nil {
-		fmt.Fprintf(consoleAndFileLogger, "\nAn error occurred during directory traversal: %v\n", err) // Log to both
+		fmt.Fprintf(consoleAndFileLogger, "\nAn error occurred during directory traversal: %v\n", err)
 	}
 
-	fmt.Fprintln(consoleAndFileLogger, "\nGit repository update process completed.") // Log to both
+	fmt.Fprintln(consoleAndFileLogger, "\nGit repository update process completed.")
 }

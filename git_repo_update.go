@@ -52,22 +52,31 @@ func updateGitRepo(repoPath string, fileOnlyLogger io.Writer) error {
 		RemoteName: remoteName,
 	})
 	if err != nil {
+		if err == git.NoErrAlreadyUpToDate {
+			fmt.Fprintf(fileOnlyLogger, "No updates available for '%s' remote to local '%s' branch\n",
+				remoteName, mainBranchName)
+			return nil
+		}
 		return fmt.Errorf("failed to pull updates from '%s' remote to local '%s' branch: %w",
 			remoteName, mainBranchName, err)
 	}
 
 	// Only push changes to 'origin' if the repo is a fork
-	// if remoteName == "upstream" {
-	// 	fmt.Fprintf(fileOnlyLogger, "Pushing updates to 'origin' remote for %s branch...\n",
-	// 		mainBranchName)
-	// 	err = r.Push(&git.PushOptions{
-	// 		RemoteName: "origin",
-	// 	})
-	// 	if err != nil {
-	// 		return fmt.Errorf("failed to push updates to 'origin' remote for %s branch: %w",
-	// 			mainBranchName, err)
-	// 	}
-	// }
+	if remoteName == "upstream" {
+		fmt.Fprintf(fileOnlyLogger, "Pushing updates to 'origin' remote for %s branch...\n",
+			mainBranchName)
+		err = r.Push(&git.PushOptions{
+			RemoteName: "origin",
+		})
+		if err != nil {
+			if err == git.ErrNonFastForwardUpdate {
+				fmt.Fprintln(fileOnlyLogger, "Non-fast-forward updates are not supported.")
+				return nil
+			}
+			return fmt.Errorf("failed to push updates to 'origin' remote for '%s' branch: %w",
+				mainBranchName, err)
+		}
+	}
 
 	return nil
 }
