@@ -29,7 +29,6 @@ func updateGitRepo(repoPath string, fileOnlyLogger io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("failed to get a remote name for repository: %w", err)
 	}
-
 	mainBranchName, err := getMainBranchName(*config)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve main branch for repository: %w", err)
@@ -48,9 +47,7 @@ func updateGitRepo(repoPath string, fileOnlyLogger io.Writer) error {
 
 	fmt.Fprintf(fileOnlyLogger, "Pulling updates from '%s' remote to local '%s' branch...\n",
 		remoteName, mainBranchName)
-	err = workingDir.Pull(&git.PullOptions{
-		RemoteName: remoteName,
-	})
+	err = workingDir.Pull(&git.PullOptions{RemoteName: remoteName})
 	if err != nil {
 		if err == git.NoErrAlreadyUpToDate {
 			fmt.Fprintf(fileOnlyLogger, "No updates available for '%s' remote to local '%s' branch\n",
@@ -65,9 +62,7 @@ func updateGitRepo(repoPath string, fileOnlyLogger io.Writer) error {
 	if remoteName == "upstream" {
 		fmt.Fprintf(fileOnlyLogger, "Pushing updates to 'origin' remote for %s branch...\n",
 			mainBranchName)
-		err = r.Push(&git.PushOptions{
-			RemoteName: "origin",
-		})
+		err = r.Push(&git.PushOptions{RemoteName: "origin"})
 		if err != nil {
 			if err == git.ErrNonFastForwardUpdate {
 				fmt.Fprintln(fileOnlyLogger, "Non-fast-forward updates are not supported.")
